@@ -1,0 +1,15 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header-info h1 {
+  margin-bottom: 0.25rem;
+}
+
+.header-info p {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}

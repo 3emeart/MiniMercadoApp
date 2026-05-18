@@ -1,0 +1,197 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Gestao de Estoque</h1>
+    <p class="page-subtitle">Acompanhe saldos, itens criticos e registre entradas de estoque.</p>
+  </div>
+
+  <button class="btn btn-secondary" type="button" (click)="carregarDados()">
+    <span class="material-symbols-outlined">refresh</span>
+    Atualizar
+  </button>
+</div>
+
+<section class="metrics-grid">
+  <div class="metric-card">
+    <span class="material-symbols-outlined metric-icon">inventory_2</span>
+    <div>
+      <span class="metric-label">Itens monitorados</span>
+      <strong class="metric-value">{{ totalItens }}</strong>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <span class="material-symbols-outlined metric-icon success">package_2</span>
+    <div>
+      <span class="metric-label">Unidades em estoque</span>
+      <strong class="metric-value">{{ totalUnidades }}</strong>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <span class="material-symbols-outlined metric-icon warning">warning</span>
+    <div>
+      <span class="metric-label">Estoque baixo</span>
+      <strong class="metric-value">{{ itensBaixos }}</strong>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <span class="material-symbols-outlined metric-icon error">production_quantity_limits</span>
+    <div>
+      <span class="metric-label">Itens zerados</span>
+      <strong class="metric-value">{{ itensZerados }}</strong>
+    </div>
+  </div>
+</section>
+
+<section class="stock-layout">
+  <div class="stock-panel">
+    <div class="stock-toolbar">
+      <div class="search-field">
+        <span class="material-symbols-outlined">search</span>
+        <input
+          type="search"
+          class="form-control"
+          placeholder="Buscar por produto ou codigo"
+          [value]="termoBusca"
+          (input)="atualizarBusca($event)"
+        >
+      </div>
+
+      <div class="status-filter" aria-label="Filtro de status">
+        <button type="button" [class.active]="filtroStatus === 'todos'" (click)="selecionarStatus('todos')">Todos</button>
+        <button type="button" [class.active]="filtroStatus === 'ok'" (click)="selecionarStatus('ok')">Ok</button>
+        <button type="button" [class.active]="filtroStatus === 'baixo'" (click)="selecionarStatus('baixo')">Baixo</button>
+        <button type="button" [class.active]="filtroStatus === 'zerado'" (click)="selecionarStatus('zerado')">Zerado</button>
+      </div>
+    </div>
+
+    <div class="card table-container stock-table">
+      <div *ngIf="isLoading" class="loading-state">
+        <span class="material-symbols-outlined spinning">progress_activity</span>
+        <p>Carregando estoque...</p>
+      </div>
+
+      <table class="table" *ngIf="!isLoading">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th width="130">Codigo</th>
+            <th class="text-center">Minimo</th>
+            <th class="text-center">Atual</th>
+            <th class="text-center">Status</th>
+            <th class="text-right">Venda</th>
+            <th class="text-center" width="140">Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="estoqueFiltrado.length === 0">
+            <td colspan="7" class="empty-state">
+              <span class="material-symbols-outlined">inventory</span>
+              <p>Nenhum item encontrado.</p>
+            </td>
+          </tr>
+
+          <tr *ngFor="let item of estoqueFiltrado">
+            <td>
+              <div class="product-name">{{ item.produtoNome }}</div>
+            </td>
+            <td>{{ item.codigo }}</td>
+            <td class="text-center">{{ item.estoqueMinimo }}</td>
+            <td class="text-center">
+              <strong>{{ item.quantidadeAtual }}</strong>
+            </td>
+            <td class="text-center">
+              <span class="badge stock-badge" [ngClass]="'badge-' + item.status">
+                {{ statusLabel(item.status) }}
+              </span>
+            </td>
+            <td class="text-right">{{ item.precoVenda | currency:'BRL':'symbol':'1.2-2' }}</td>
+            <td class="text-center">
+              <button class="btn-icon-sm" type="button" title="Editar produto" [routerLink]="['/admin/produtos/editar', item.produtoId]">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="btn-icon-sm" type="button" title="Historico" (click)="carregarMovimentacoes(item.produtoId)">
+                <span class="material-symbols-outlined">history</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <aside class="card movement-card">
+    <div class="card-header">
+      <h2>Entrada Manual</h2>
+    </div>
+
+    <form [formGroup]="movimentacaoForm" (ngSubmit)="registrarMovimentacao()">
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label" for="produtoId">Produto <span class="required">*</span></label>
+          <select id="produtoId" class="form-control" formControlName="produtoId">
+            <option value="" disabled>{{ isLoadingProdutos ? 'Carregando produtos...' : 'Selecione um produto' }}</option>
+            <option *ngFor="let produto of produtos" [value]="produto.id">
+              {{ produto.nome }} - {{ produto.codigo }}
+            </option>
+          </select>
+          <div *ngIf="isSubmitted && movimentacaoForm.get('produtoId')?.invalid" class="form-error-msg">
+            Selecione um produto.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="quantidade">Quantidade <span class="required">*</span></label>
+          <input id="quantidade" type="number" class="form-control" formControlName="quantidade" min="1" step="1">
+          <div *ngIf="isSubmitted && movimentacaoForm.get('quantidade')?.invalid" class="form-error-msg">
+            Informe uma quantidade maior que zero.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="observacao">Observacao</label>
+          <textarea id="observacao" class="form-control" formControlName="observacao" rows="4" placeholder="Ex: compra, perda, inventario"></textarea>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="isSaving">
+          <span class="material-symbols-outlined" *ngIf="!isSaving">sync_alt</span>
+          <span class="material-symbols-outlined spinning" *ngIf="isSaving">progress_activity</span>
+          {{ isSaving ? 'Registrando...' : 'Registrar entrada' }}
+        </button>
+      </div>
+    </form>
+
+    <div class="history-panel">
+      <div class="history-header">
+        <h3>Historico</h3>
+        <span *ngIf="produtoHistoricoId">Produto #{{ produtoHistoricoId }}</span>
+      </div>
+
+      <div *ngIf="!produtoHistoricoId" class="history-empty">
+        Selecione o historico de um item na tabela.
+      </div>
+
+      <div *ngIf="produtoHistoricoId && isLoadingMovimentacoes" class="history-empty">
+        Carregando movimentacoes...
+      </div>
+
+      <div *ngIf="produtoHistoricoId && !isLoadingMovimentacoes && movimentacoes.length === 0" class="history-empty">
+        Nenhuma movimentacao encontrada.
+      </div>
+
+      <div class="history-list" *ngIf="produtoHistoricoId && !isLoadingMovimentacoes && movimentacoes.length > 0">
+        <div class="history-item" *ngFor="let mov of movimentacoes">
+          <div>
+            <strong>{{ tipoMovimentacaoLabel(mov.tipo) }}</strong>
+            <span>{{ mov.criadoEm | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <strong class="history-quantity" [class.out]="mov.tipo === 1">{{ quantidadeMovimentacaoLabel(mov) }}</strong>
+          <p *ngIf="mov.observacao">{{ mov.observacao }}</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</section>

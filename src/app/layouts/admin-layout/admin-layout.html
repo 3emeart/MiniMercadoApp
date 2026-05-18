@@ -1,0 +1,110 @@
+<div class="admin-container" [class.sidebar-collapsed]="!sidebarOpen">
+  
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem;">
+        <img src="/logo.png" alt="FluxPDV Logo" style="width: 40px; height: 40px; object-fit: contain;">
+        <span class="logo-text" *ngIf="sidebarOpen" style="font-weight: 800; font-size: 1.25rem; color: var(--color-primary); letter-spacing: -0.5px;">FluxPDV</span>
+      </div>
+    </div>
+    
+
+
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li class="nav-item" routerLinkActive="active">
+          <a routerLink="/admin/dashboard" class="nav-link">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="nav-text" *ngIf="sidebarOpen">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+          <a routerLink="/admin/produtos" class="nav-link">
+            <span class="material-symbols-outlined">inventory_2</span>
+            <span class="nav-text" *ngIf="sidebarOpen">Produtos</span>
+          </a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+          <a routerLink="/admin/categorias" class="nav-link">
+            <span class="material-symbols-outlined">category</span>
+            <span class="nav-text" *ngIf="sidebarOpen">Categorias</span>
+          </a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+          <a routerLink="/admin/estoque" class="nav-link">
+            <span class="material-symbols-outlined">warehouse</span>
+            <span class="nav-text" *ngIf="sidebarOpen">Estoque</span>
+          </a>
+        </li>
+
+        <li class="nav-item" routerLinkActive="active">
+          <a routerLink="/admin/financeiro" class="nav-link">
+            <span class="material-symbols-outlined">monitoring</span>
+            <span class="nav-text" *ngIf="sidebarOpen">Financeiro</span>
+          </a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+          <a routerLink="/admin/usuarios" class="nav-link">
+            <span class="material-symbols-outlined">group</span>
+            <span class="nav-text" *ngIf="sidebarOpen">Usuários</span>
+          </a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+          <a routerLink="/admin/configuracoes" class="nav-link">
+            <span class="material-symbols-outlined">settings</span>
+            <span class="nav-text" *ngIf="sidebarOpen">Configurações</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <a routerLink="/login" class="nav-link logout-link">
+        <span class="material-symbols-outlined">logout</span>
+        <span class="nav-text" *ngIf="sidebarOpen">Sair</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-wrapper">
+    
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="btn-icon toggle-btn" (click)="toggleSidebar()">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="breadcrumb">
+          <span>ERP</span>
+          <span class="material-symbols-outlined separator">chevron_right</span>
+          <span>{{ currentSection }}</span>
+          <span class="material-symbols-outlined separator">chevron_right</span>
+          <span class="current">{{ currentPage }}</span>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <button class="btn-icon">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <div class="user-profile">
+          <div class="avatar">
+            <span class="material-symbols-outlined">person</span>
+          </div>
+          <div class="user-info">
+            <span class="user-name">Administrador</span>
+            <span class="user-role">Gerente</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+    
+  </div>
+</div>

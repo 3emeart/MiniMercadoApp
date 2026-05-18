@@ -1,0 +1,158 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Detalhamento Financeiro</h1>
+    <p class="page-subtitle">Acompanhe faturamento, formas de pagamento e vendas por período.</p>
+  </div>
+
+  <div class="period-actions">
+    <button class="btn btn-secondary" type="button" (click)="aplicarPeriodoRapido(1)">Hoje</button>
+    <button class="btn btn-secondary" type="button" (click)="aplicarPeriodoRapido(7)">7 dias</button>
+    <button class="btn btn-secondary" type="button" (click)="aplicarPeriodoRapido(30)">30 dias</button>
+  </div>
+</div>
+
+<section class="filter-bar">
+  <div class="form-group">
+    <label class="form-label" for="inicio">Início</label>
+    <input id="inicio" class="form-control" type="date" [(ngModel)]="inicio">
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="fim">Fim</label>
+    <input id="fim" class="form-control" type="date" [(ngModel)]="fim">
+  </div>
+
+  <button class="btn btn-primary" type="button" (click)="carregarResumo()" [disabled]="isLoading">
+    <span class="material-symbols-outlined" [class.spinning]="isLoading">sync</span>
+    Atualizar
+  </button>
+</section>
+
+<div *ngIf="isLoading" class="state-card">
+  <span class="material-symbols-outlined spinning">progress_activity</span>
+  <p>Carregando financeiro...</p>
+</div>
+
+<div *ngIf="!isLoading && errorMessage" class="state-card error">
+  <span class="material-symbols-outlined">error</span>
+  <p>{{ errorMessage }}</p>
+  <button class="btn btn-secondary" type="button" (click)="carregarResumo()">Tentar novamente</button>
+</div>
+
+<ng-container *ngIf="!isLoading && !errorMessage && resumo">
+  <section class="metrics-grid">
+    <div class="metric-card primary">
+      <span class="metric-label">Faturamento bruto</span>
+      <strong>{{ resumo.faturamentoBruto | currency:'BRL':'symbol':'1.2-2' }}</strong>
+      <small>{{ resumo.vendasFinalizadas }} vendas finalizadas</small>
+    </div>
+
+    <div class="metric-card">
+      <span class="metric-label">Ticket médio</span>
+      <strong>{{ resumo.ticketMedio | currency:'BRL':'symbol':'1.2-2' }}</strong>
+      <small>{{ resumo.itensVendidos }} itens vendidos</small>
+    </div>
+
+    <div class="metric-card">
+      <span class="metric-label">Cancelamentos</span>
+      <strong>{{ resumo.faturamentoCancelado | currency:'BRL':'symbol':'1.2-2' }}</strong>
+      <small>{{ resumo.vendasCanceladas }} vendas · {{ taxaCancelamento | number:'1.0-1' }}%</small>
+    </div>
+
+    <div class="metric-card">
+      <span class="metric-label">Vendas abertas</span>
+      <strong>{{ resumo.vendasAbertas }}</strong>
+      <small>Em andamento no período</small>
+    </div>
+  </section>
+
+  <section class="finance-layout">
+    <div class="panel chart-panel">
+      <div class="panel-header">
+        <h2>Faturamento diário</h2>
+        <span>{{ inicio | date:'dd/MM/yyyy' }} - {{ fim | date:'dd/MM/yyyy' }}</span>
+      </div>
+
+      <div class="bar-chart">
+        <div class="bar-day" *ngFor="let dia of resumo.serieDiaria">
+          <div class="bar-track">
+            <div class="bar-fill" [style.height.%]="alturaBarra(dia.total)"></div>
+          </div>
+          <strong>{{ dia.total | currency:'BRL':'symbol':'1.0-0' }}</strong>
+          <span>{{ dia.data | date:'dd/MM' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="panel payments-panel">
+      <div class="panel-header">
+        <h2>Formas de pagamento</h2>
+        <span>{{ totalMovimento | currency:'BRL':'symbol':'1.2-2' }} movimento</span>
+      </div>
+
+      <div class="payment-list">
+        <div class="payment-row" *ngFor="let pagamento of resumo.formasPagamento">
+          <div>
+            <strong>{{ pagamento.nome }}</strong>
+            <span>{{ pagamento.quantidade }} vendas</span>
+          </div>
+          <div class="payment-value">
+            <strong>{{ pagamento.total | currency:'BRL':'symbol':'1.2-2' }}</strong>
+            <span>{{ percentualPagamento(pagamento.total) | number:'1.0-1' }}%</span>
+          </div>
+          <div class="payment-progress">
+            <span [style.width.%]="percentualPagamento(pagamento.total)"></span>
+          </div>
+        </div>
+
+        <div class="empty-payment" *ngIf="resumo.formasPagamento.length === 0">
+          Nenhum pagamento finalizado no período.
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="panel sales-panel">
+    <div class="panel-header">
+      <h2>Vendas recentes</h2>
+      <span>Últimos lançamentos do período</span>
+    </div>
+
+    <div class="table-container finance-table">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Venda</th>
+            <th>Data</th>
+            <th>Status</th>
+            <th>Pagamento</th>
+            <th class="text-center">Itens</th>
+            <th class="text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let venda of resumo.ultimasVendas">
+            <td>
+              <strong>#{{ venda.id.substring(0, 8).toUpperCase() }}</strong>
+            </td>
+            <td>{{ dataReferencia(venda) | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="badge" [ngClass]="statusClass(venda.status)">
+                {{ statusLabel(venda.status) }}
+              </span>
+            </td>
+            <td>{{ formaPagamentoLabel(venda.formaPagamento) }}</td>
+            <td class="text-center">{{ venda.itens }}</td>
+            <td class="text-right">{{ venda.totalFinal | currency:'BRL':'symbol':'1.2-2' }}</td>
+          </tr>
+
+          <tr *ngIf="resumo.ultimasVendas.length === 0">
+            <td colspan="6" class="empty-table">
+              Nenhuma venda encontrada no período.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</ng-container>

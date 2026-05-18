@@ -1,0 +1,64 @@
+<div class="page-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h1 class="page-title" style="font-size: 1.5rem; margin-bottom: 0.25rem;">Produtos</h1>
+    <p class="page-subtitle" style="color: var(--color-text-secondary); font-size: 0.875rem;">Gerencie o catálogo de produtos e seus estoques.</p>
+  </div>
+  
+  <a routerLink="/admin/produtos/novo" class="btn btn-primary">
+    <span class="material-symbols-outlined">add</span> Novo Produto
+  </a>
+</div>
+
+<div class="card table-container">
+  
+  <div *ngIf="isLoading()" style="padding: 3rem; text-align: center; color: var(--color-text-secondary);">
+    <span class="material-symbols-outlined spinning" style="font-size: 2rem;">progress_activity</span>
+    <p style="margin-top: 1rem;">Carregando produtos...</p>
+  </div>
+
+  <table class="table" *ngIf="!isLoading()">
+    <thead>
+      <tr>
+        <th width="80">Código</th>
+        <th>Produto</th>
+        <th class="text-right">Preço de Venda</th>
+        <th class="text-center">Estoque</th>
+        <th class="text-center" width="100">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr *ngIf="products().length === 0">
+        <td colspan="5" class="text-center" style="padding: 3rem; color: var(--color-text-secondary);">
+          <span class="material-symbols-outlined" style="font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.5;">inventory_2</span>
+          <p>Nenhum produto cadastrado.</p>
+        </td>
+      </tr>
+
+      <tr *ngFor="let p of products()">
+        <td>{{ p.codigo }}</td>
+        <td>
+          <div style="font-weight: 500;">{{ p.nome }}</div>
+        </td>
+        <td class="text-right">
+          {{ p.precoVenda | currency:'BRL':'symbol':'1.2-2' }}
+        </td>
+        <td class="text-center">
+          <span class="badge" [ngClass]="p.quantidadeAtual > 5 ? 'badge-success' : 'badge-warning'">
+            {{ p.quantidadeAtual || 0 }}
+          </span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-icon-sm" title="Editar" [routerLink]="['/admin/produtos/editar', p.id]">
+              <span class="material-symbols-outlined" style="font-size: 1.25rem;">edit</span>
+            </button>
+            <button class="btn-icon-sm delete" title="Excluir" (click)="excluirProduto(p.id, p.nome)">
+              <span class="material-symbols-outlined" style="font-size: 1.25rem;">delete</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

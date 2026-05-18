@@ -1,0 +1,194 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Usuários e Operadores</h1>
+    <p class="page-subtitle">Gerencie permissões, acessos administrativos e operadores do PDV.</p>
+  </div>
+
+  <button class="btn btn-primary" type="button" (click)="abrirModal()">
+    <span class="material-symbols-outlined">person_add</span>
+    Novo Usuário
+  </button>
+</div>
+
+<section class="user-metrics">
+  <div class="metric-card">
+    <span class="material-symbols-outlined metric-icon">groups</span>
+    <div>
+      <span class="metric-label">Usuários</span>
+      <strong class="metric-value">{{ totalUsuarios }}</strong>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <span class="material-symbols-outlined metric-icon success">verified_user</span>
+    <div>
+      <span class="metric-label">Ativos</span>
+      <strong class="metric-value">{{ usuariosAtivos }}</strong>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <span class="material-symbols-outlined metric-icon info">admin_panel_settings</span>
+    <div>
+      <span class="metric-label">Gestão</span>
+      <strong class="metric-value">{{ totalGerentes }}</strong>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <span class="material-symbols-outlined metric-icon warning">point_of_sale</span>
+    <div>
+      <span class="metric-label">Operadores</span>
+      <strong class="metric-value">{{ totalOperadores }}</strong>
+    </div>
+  </div>
+</section>
+
+<section class="user-toolbar">
+  <div class="search-field">
+    <span class="material-symbols-outlined">search</span>
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Buscar por nome ou e-mail"
+      [(ngModel)]="termoBusca"
+    >
+  </div>
+
+  <div class="filter-group">
+    <select class="form-control" [(ngModel)]="filtroPerfil">
+      <option value="todos">Todos os perfis</option>
+      <option [ngValue]="0">Admin</option>
+      <option [ngValue]="1">Gerente</option>
+      <option [ngValue]="2">Operador</option>
+    </select>
+
+    <select class="form-control" [(ngModel)]="filtroStatus">
+      <option value="todos">Todos os status</option>
+      <option value="ativos">Ativos</option>
+      <option value="inativos">Inativos</option>
+    </select>
+  </div>
+</section>
+
+<div class="card table-container user-table">
+  <div *ngIf="isLoading" class="state-box">
+    <span class="material-symbols-outlined spinning">progress_activity</span>
+    <p>Carregando usuários...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="state-box error-state">
+    <span class="material-symbols-outlined">error</span>
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-secondary" type="button" (click)="carregarUsuarios()">
+      <span class="material-symbols-outlined">refresh</span>
+      Tentar novamente
+    </button>
+  </div>
+
+  <table class="table" *ngIf="!isLoading && !errorMessage">
+    <thead>
+      <tr>
+        <th>Usuário</th>
+        <th>E-mail</th>
+        <th>Perfil</th>
+        <th>Status</th>
+        <th>Criado em</th>
+        <th class="text-right">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of usuariosFiltrados">
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar">{{ u.name.charAt(0).toUpperCase() }}</div>
+            <div>
+              <div class="user-name">{{ u.name }}</div>
+              <div class="user-id">ID {{ u.id.slice(0, 8) }}</div>
+            </div>
+          </div>
+        </td>
+        <td>{{ u.email }}</td>
+        <td>
+          <span class="badge role-badge" [ngClass]="{
+            'badge-admin': u.role === 0,
+            'badge-manager': u.role === 1,
+            'badge-operator': u.role === 2
+          }">
+            {{ getRoleName(u.role) }}
+          </span>
+        </td>
+        <td>
+          <span class="badge" [ngClass]="u.active ? 'badge-success' : 'badge-muted'">
+            {{ u.active ? 'Ativo' : 'Inativo' }}
+          </span>
+        </td>
+        <td>{{ u.createdIn ? (u.createdIn | date:'dd/MM/yyyy') : '-' }}</td>
+        <td class="text-right">
+          <div class="action-buttons">
+            <button class="btn-icon-sm delete" type="button" (click)="excluirUsuario(u)" title="Excluir">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngIf="usuariosFiltrados.length === 0">
+        <td colspan="6" class="empty-state">
+          <span class="material-symbols-outlined">person_search</span>
+          <p>Nenhum usuário encontrado.</p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="exibindoModal" class="modal-overlay">
+  <div class="card user-modal">
+    <div class="card-header">
+      <h2>Cadastrar Usuário</h2>
+      <button class="btn-icon-sm" type="button" (click)="fecharModal()" title="Fechar">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="card-body">
+      <div class="grid-form">
+        <div class="col-12 form-group">
+          <label class="form-label" for="nome">Nome Completo</label>
+          <input id="nome" type="text" class="form-control" [(ngModel)]="novoUsuario.name" placeholder="Ex: João Silva">
+        </div>
+
+        <div class="col-12 form-group">
+          <label class="form-label" for="email">E-mail de Login</label>
+          <input id="email" type="email" class="form-control" [(ngModel)]="novoUsuario.email" placeholder="email@exemplo.com">
+        </div>
+
+        <div class="col-12 form-group">
+          <label class="form-label" for="senha">Senha</label>
+          <input id="senha" type="password" class="form-control" [(ngModel)]="novoUsuario.password" placeholder="Mínimo 6 caracteres">
+        </div>
+
+        <div class="col-12 form-group">
+          <label class="form-label" for="perfil">Perfil de Acesso</label>
+          <select id="perfil" class="form-control" [(ngModel)]="novoUsuario.role">
+            <option [ngValue]="2">Operador - PDV</option>
+            <option [ngValue]="1">Gerente - Administrativo</option>
+            <option [ngValue]="0">Administrador - Acesso total</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <button class="btn btn-secondary" type="button" (click)="fecharModal()" [disabled]="isProcessing">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" type="button" (click)="salvarUsuario()" [disabled]="isProcessing">
+        <span class="material-symbols-outlined" *ngIf="!isProcessing">save</span>
+        <span class="material-symbols-outlined spinning" *ngIf="isProcessing">progress_activity</span>
+        {{ isProcessing ? 'Salvando...' : 'Salvar Usuário' }}
+      </button>
+    </div>
+  </div>
+</div>

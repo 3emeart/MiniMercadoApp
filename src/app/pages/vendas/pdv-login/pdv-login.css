@@ -1,0 +1,107 @@
+.pdv-login-container {
+  height: 100vh;
+  width: 100vw;
+  background: radial-gradient(circle at top right, var(--color-primary-light), var(--color-primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+}
+
+.pdv-login-card {
+  width: 100%;
+  max-width: 450px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  padding: 3rem;
+  animation: slideUp 0.5s ease-out;
+}
+
+.pdv-login-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.logo-icon {
+  font-size: 4rem;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.pdv-login-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--color-primary-dark);
+  letter-spacing: -1px;
+}
+
+.pdv-login-header p {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon .material-symbols-outlined {
+  position: absolute;
+  left: 1rem;
+  color: var(--color-text-disabled);
+}
+
+.input-with-icon .form-control {
+  padding-left: 3rem;
+  height: 3.5rem;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.btn-login {
+  width: 100%;
+  height: 3.5rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.btn-login:hover {
+  background: var(--color-primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(11, 79, 108, 0.3);
+}
+
+.error-alert {
+  background: rgba(211, 47, 47, 0.1);
+  color: var(--color-error);
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.pdv-login-footer {
+  margin-top: 3rem;
+  text-align: center;
+  color: var(--color-text-disabled);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

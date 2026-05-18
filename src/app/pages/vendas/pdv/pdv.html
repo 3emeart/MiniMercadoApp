@@ -1,0 +1,275 @@
+<div class="pdv-screen">
+  <header class="pdv-header">
+    <div class="brand-area">
+      <img src="/logo.png" alt="FluxPDV" class="brand-logo">
+      <div>
+        <h1>FluxPDV</h1>
+        <span>Frente de caixa</span>
+      </div>
+    </div>
+
+    <div class="session-strip">
+      <div class="session-item">
+        <span>Operador</span>
+        <strong>{{ operador?.nome || 'Não identificado' }}</strong>
+      </div>
+      <div class="session-item">
+        <span>Terminal</span>
+        <strong>PDV 01</strong>
+      </div>
+      <div class="session-item">
+        <span>Produtos</span>
+        <strong>{{ produtosDisponiveis }}</strong>
+      </div>
+    </div>
+
+    <button class="header-action" type="button" (click)="sair()" title="Sair do PDV">
+      <span class="material-symbols-outlined">logout</span>
+      Sair
+    </button>
+  </header>
+
+  <main class="pdv-shell">
+    <div *ngIf="exibindoAutorizacao" class="modal-overlay">
+      <div class="card supervisor-modal">
+        <div class="modal-icon danger">
+          <span class="material-symbols-outlined">lock_person</span>
+        </div>
+        <h2>Autorização Gerente</h2>
+        <p>Informe a senha para cancelar o item do cupom.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="senhaSupervisor">Senha do Supervisor</label>
+          <input
+            id="senhaSupervisor"
+            type="password"
+            class="form-control"
+            [(ngModel)]="senhaSupervisor"
+            placeholder="Digite a senha"
+            (keyup.enter)="confirmarCancelamento()"
+            autofocus
+          >
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-primary" type="button" (click)="confirmarCancelamento()">
+            <span class="material-symbols-outlined">check_circle</span>
+            Autorizar
+          </button>
+          <button class="btn btn-secondary" type="button" (click)="cancelarAutorizacao()">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="exibindoPagamento && vendaAtual" class="modal-overlay">
+      <div class="card payment-modal">
+        <div class="payment-header">
+          <div>
+            <h2>Pagamento</h2>
+            <span>Cupom #{{ vendaAtual.id.substring(0, 8).toUpperCase() }}</span>
+          </div>
+          <button class="btn-icon-sm" type="button" (click)="fecharPagamento()" title="Fechar">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="payment-total">
+          <span>Total da venda</span>
+          <strong>{{ vendaAtual.totalFinal | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+
+        <div class="payment-options">
+          <button type="button" [class.active]="formaPagamentoSelecionada === 0" (click)="selecionarPagamento(0)">
+            <span class="material-symbols-outlined">payments</span>
+            Dinheiro
+          </button>
+          <button type="button" [class.active]="formaPagamentoSelecionada === 1" (click)="selecionarPagamento(1)">
+            <span class="material-symbols-outlined">credit_card</span>
+            Crédito
+          </button>
+          <button type="button" [class.active]="formaPagamentoSelecionada === 2" (click)="selecionarPagamento(2)">
+            <span class="material-symbols-outlined">credit_score</span>
+            Débito
+          </button>
+        </div>
+
+        <div class="cash-box" *ngIf="formaPagamentoSelecionada === 0">
+          <label class="form-label" for="valorRecebido">Valor recebido</label>
+          <input
+            id="valorRecebido"
+            type="number"
+            class="form-control"
+            [(ngModel)]="valorRecebido"
+            min="0"
+            step="0.01"
+            (keyup.enter)="finalizarVenda()"
+          >
+          <div class="change-row">
+            <span>Troco</span>
+            <strong>{{ troco | currency:'BRL':'symbol':'1.2-2' }}</strong>
+          </div>
+        </div>
+
+        <div class="payment-actions">
+          <button class="btn btn-secondary" type="button" (click)="fecharPagamento()" [disabled]="isFinalizing">
+            Voltar
+          </button>
+          <button class="btn btn-primary" type="button" (click)="finalizarVenda()" [disabled]="isFinalizing">
+            <span class="material-symbols-outlined" *ngIf="!isFinalizing">check_circle</span>
+            <span class="material-symbols-outlined spinning" *ngIf="isFinalizing">progress_activity</span>
+            {{ isFinalizing ? 'Finalizando...' : 'Confirmar venda' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <section *ngIf="!vendaAtual" class="idle-state">
+      <div class="idle-panel">
+        <div class="idle-icon">
+          <span class="material-symbols-outlined">point_of_sale</span>
+        </div>
+        <div>
+          <h2>Caixa livre</h2>
+          <p>Abra uma nova venda para iniciar o atendimento.</p>
+        </div>
+        <button class="btn btn-primary start-sale" type="button" (click)="iniciarVenda()" [disabled]="isProcessing">
+          <span class="material-symbols-outlined">add_shopping_cart</span>
+          {{ isProcessing ? 'Abrindo...' : 'Iniciar venda' }}
+        </button>
+        <span class="shortcut-chip">F1</span>
+      </div>
+    </section>
+
+    <section *ngIf="vendaAtual" class="sale-workspace">
+      <div class="product-side">
+        <div class="scanner-panel">
+          <div class="scanner-label">
+            <span class="material-symbols-outlined">barcode_scanner</span>
+            <div>
+              <strong>Produto</strong>
+              <span>Bipe o código ou pesquise pelo nome</span>
+            </div>
+          </div>
+          <div class="scanner-input">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Código, EAN ou nome do produto"
+              [(ngModel)]="searchTerm"
+              (input)="filtrarProdutos()"
+              (keyup.enter)="adicionarPrimeiroResultado()"
+              autofocus
+            >
+            <button class="btn btn-secondary" type="button" (click)="filtrarProdutos()" title="Buscar">
+              <span class="material-symbols-outlined">search</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="product-toolbar">
+          <div>
+            <strong>{{ produtosFiltrados.length }}</strong>
+            <span>itens encontrados</span>
+          </div>
+          <button class="btn btn-secondary" type="button" (click)="carregarProdutos()" [disabled]="isLoadingProdutos">
+            <span class="material-symbols-outlined" [class.spinning]="isLoadingProdutos">refresh</span>
+            Atualizar
+          </button>
+        </div>
+
+        <div class="product-list">
+          <button
+            type="button"
+            class="product-row"
+            *ngFor="let p of produtosFiltrados"
+            (click)="adicionarProduto(p.id)"
+            [disabled]="isProcessing || p.quantidadeAtual <= 0"
+            [class.out-stock]="p.quantidadeAtual <= 0"
+          >
+            <div class="product-main">
+              <strong>{{ p.nome }}</strong>
+              <span>Cód. {{ p.codigo }}</span>
+            </div>
+            <div class="stock-pill" [class.low]="p.quantidadeAtual > 0 && p.quantidadeAtual <= 5" [class.zero]="p.quantidadeAtual <= 0">
+              {{ p.quantidadeAtual }} un
+            </div>
+            <div class="product-price">{{ p.precoVenda | currency:'BRL':'symbol':'1.2-2' }}</div>
+          </button>
+
+          <div *ngIf="!isLoadingProdutos && produtosFiltrados.length === 0" class="empty-products">
+            <span class="material-symbols-outlined">search_off</span>
+            <p>Nenhum produto encontrado.</p>
+          </div>
+
+          <div *ngIf="isLoadingProdutos" class="empty-products">
+            <span class="material-symbols-outlined spinning">progress_activity</span>
+            <p>Atualizando produtos...</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="receipt-side">
+        <div class="receipt-header">
+          <div>
+            <span>Cupom fiscal</span>
+            <strong>#{{ vendaAtual.id.substring(0, 8).toUpperCase() }}</strong>
+          </div>
+          <div class="status-open">Aberta</div>
+        </div>
+
+        <div class="receipt-summary">
+          <div>
+            <span>Itens</span>
+            <strong>{{ quantidadeItens }}</strong>
+          </div>
+          <div>
+            <span>Linhas</span>
+            <strong>{{ totalItensDistintos }}</strong>
+          </div>
+          <div>
+            <span>Status</span>
+            <strong>Em atendimento</strong>
+          </div>
+        </div>
+
+        <ul class="receipt-items">
+          <li *ngIf="!vendaAtual.itens || vendaAtual.itens.length === 0" class="receipt-empty">
+            <span class="material-symbols-outlined">shopping_basket</span>
+            <p>Nenhum item lançado.</p>
+          </li>
+
+          <li class="receipt-item" *ngFor="let item of vendaAtual.itens; let index = index">
+            <div class="item-index">{{ index + 1 }}</div>
+            <div class="item-info">
+              <strong>{{ item.nomeProduto }}</strong>
+              <span>{{ item.quantidade }} x {{ item.precoUnitario | currency:'BRL':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="item-total">
+              <strong>{{ item.subtotal | currency:'BRL':'symbol':'1.2-2' }}</strong>
+              <button class="btn-icon-sm delete" type="button" (click)="removerItem(item.id)" [disabled]="isProcessing" title="Cancelar item">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </li>
+        </ul>
+
+        <div class="receipt-footer">
+          <div class="total-line">
+            <span>Total</span>
+            <strong>{{ vendaAtual.totalFinal | currency:'BRL':'symbol':'1.2-2' }}</strong>
+          </div>
+          <button class="btn btn-primary btn-block pay-button" type="button" (click)="abrirPagamento()" [disabled]="!podeFinalizar">
+            <span class="material-symbols-outlined">payments</span>
+            Pagamento
+          </button>
+          <div class="shortcut-row">
+            <span>F12 pagamento</span>
+            <span>Esc fechar modal</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>

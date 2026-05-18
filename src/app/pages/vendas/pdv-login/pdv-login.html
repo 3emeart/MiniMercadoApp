@@ -1,0 +1,41 @@
+<div class="pdv-login-container">
+  <div class="pdv-login-card">
+    <div class="pdv-login-header">
+      <img src="/logo.png" alt="FluxPDV" style="width: 120px; margin-bottom: 1.5rem;">
+      <h1>FluxPDV</h1>
+      <p>Terminal de Vendas Inteligente</p>
+    </div>
+
+    <form (submit)="login()" class="pdv-login-form">
+      <div class="form-group">
+        <label class="form-label">E-mail do Operador</label>
+        <div class="input-with-icon">
+          <span class="material-symbols-outlined">person</span>
+          <input type="email" class="form-control" [(ngModel)]="email" name="email" placeholder="Digite seu e-mail" autofocus>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <div class="input-with-icon">
+          <span class="material-symbols-outlined">lock</span>
+          <input type="password" class="form-control" [(ngModel)]="password" name="password" placeholder="••••••••">
+        </div>
+      </div>
+
+      <div *ngIf="errorMsg" class="error-alert">
+        <span class="material-symbols-outlined">error</span>
+        {{ errorMsg }}
+      </div>
+
+      <button type="submit" class="btn btn-login" [disabled]="isProcessing">
+        {{ isProcessing ? 'AUTENTICANDO...' : 'ENTRAR NO CAIXA' }}
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </form>
+
+    <div class="pdv-login-footer">
+      <p>Terminal #01 | v1.0.4</p>
+    </div>
+  </div>
+</div>

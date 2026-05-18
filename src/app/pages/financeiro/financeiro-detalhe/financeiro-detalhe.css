@@ -1,0 +1,269 @@
+.page-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.period-actions,
+.filter-bar {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filter-bar {
+  align-items: end;
+  background: var(--color-bg-paper);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+}
+
+.filter-bar .form-group {
+  margin: 0;
+  min-width: 180px;
+}
+
+.metrics-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.metric-card,
+.panel,
+.state-card {
+  background: var(--color-bg-paper);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 116px;
+  padding: 1.25rem;
+}
+
+.metric-card.primary {
+  border-left: 4px solid var(--color-primary);
+}
+
+.metric-label {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.metric-card strong {
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+
+.metric-card small {
+  color: var(--color-text-secondary);
+}
+
+.finance-layout {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  margin-bottom: 1.5rem;
+}
+
+.panel {
+  overflow: hidden;
+}
+
+.panel-header {
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+}
+
+.panel-header h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.panel-header span {
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.bar-chart {
+  align-items: end;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
+  min-height: 280px;
+  padding: 1.25rem;
+}
+
+.bar-day {
+  align-items: center;
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+}
+
+.bar-track {
+  align-items: end;
+  background: var(--color-bg-main);
+  border-radius: var(--radius-sm);
+  display: flex;
+  height: 180px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.bar-fill {
+  background: var(--color-primary);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 0;
+  width: 100%;
+}
+
+.bar-day strong {
+  font-size: 0.7rem;
+  min-height: 18px;
+  text-align: center;
+}
+
+.bar-day span {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.payment-list {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+.payment-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+}
+
+.payment-row > div:first-child,
+.payment-value {
+  display: flex;
+  justify-content: space-between;
+}
+
+.payment-row span,
+.payment-value span {
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+}
+
+.payment-progress {
+  background: var(--color-bg-main);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.payment-progress span {
+  background: var(--color-secondary);
+  display: block;
+  height: 100%;
+}
+
+.finance-table {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin-top: 0;
+}
+
+.badge-error {
+  background: rgba(211, 47, 47, 0.1);
+  color: var(--color-error);
+}
+
+.empty-table,
+.empty-payment {
+  color: var(--color-text-secondary);
+  padding: 2rem;
+  text-align: center;
+}
+
+.state-card {
+  color: var(--color-text-secondary);
+  padding: 3rem;
+  text-align: center;
+}
+
+.state-card .material-symbols-outlined {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.state-card.error {
+  color: var(--color-error);
+}
+
+.state-card .btn {
+  margin-top: 1rem;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1180px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .finance-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header,
+  .period-actions,
+  .filter-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-bar .form-group {
+    min-width: 0;
+  }
+}
