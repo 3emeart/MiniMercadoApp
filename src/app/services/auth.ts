@@ -26,10 +26,10 @@ export interface LoginResponse {
 })
 export class AuthService {
   private http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl;
+  private readonly authUrl = environment.authUrl;
 
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request).pipe(
+    return this.http.post<LoginResponse>(`${this.authUrl}/login`, request).pipe(
       tap(response => {
         if (response.token) {
           localStorage.setItem('auth_token', response.token);
