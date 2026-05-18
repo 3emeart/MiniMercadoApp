@@ -47,7 +47,7 @@ export interface FinanceiroResumoResponse {
 })
 export class FinanceiroService {
   private http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/Financeiro/resumo`;
+  private readonly apiUrl = `${environment.apiUrl}/Financeiro`;
 
   obterResumo(inicio: string, fim: string): Observable<FinanceiroResumoResponse> {
     const params = new HttpParams()
