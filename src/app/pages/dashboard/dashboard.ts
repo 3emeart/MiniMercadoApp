@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FinanceiroService, FinanceiroResumoResponse } from '../../services/financeiro';
 import { EstoqueService, EstoqueResumoResponse } from '../../services/estoque';
@@ -63,6 +63,7 @@ export class DashboardComponent implements OnInit {
   private userService = inject(UserService);
   private categoriaService = inject(CategoriaService);
   private datePipe = inject(DatePipe);
+  private cdr = inject(ChangeDetectorRef);
 
   // Dados dos Cards
   faturamentoMes: number = 0;
@@ -125,10 +126,12 @@ export class DashboardComponent implements OnInit {
         this.montarGraficoPagamento(result.financeiro.formasPagamento);
 
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Erro ao carregar dados do dashboard', err);
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
