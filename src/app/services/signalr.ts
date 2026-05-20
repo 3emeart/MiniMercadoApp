@@ -44,10 +44,7 @@ export class SignalRService {
     console.log(`SignalR: Tentando conectar ao Hub em: ${this.hubUrl}`);
     
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(this.hubUrl, {
-        skipNegotiation: true,
-        transport: signalR.HttpTransportType.WebSockets
-      })
+      .withUrl(this.hubUrl)
       .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Information)
       .build();
