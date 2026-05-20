@@ -10,6 +10,7 @@ import { PdvLogin } from './pages/vendas/pdv-login/pdv-login';
 import { EstoqueGestao } from './pages/estoque/estoque-gestao/estoque-gestao';
 import { FinanceiroDetalhe } from './pages/financeiro/financeiro-detalhe/financeiro-detalhe';
 import { CategoriaLista } from './pages/produtos/categoria-lista/categoria-lista';
+import { DashboardComponent } from './pages/dashboard/dashboard';
 
 export const routes: Routes = [
   {
@@ -28,6 +29,8 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminLayout,
     children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
       { path: 'produtos', component: ProductList },
       { path: 'produtos/novo', component: ProdutoCadastro },
       { path: 'produtos/editar/:id', component: ProdutoCadastro },
