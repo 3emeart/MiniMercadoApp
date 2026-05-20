@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:5290/api/v1',
-  authUrl: 'http://localhost:5290/api/auth'
+  authUrl: 'http://localhost:5290/api/auth',
+  hubUrl: 'http://localhost:5290/hubs/notifications'
 };

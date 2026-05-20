@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router, RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { SignalRService } from '../../services/signalr';
 
 @Component({
   selector: 'app-admin-layout',
@@ -9,10 +10,74 @@ import { CommonModule } from '@angular/common';
   templateUrl: './admin-layout.html',
   styleUrl: './admin-layout.css'
 })
-export class AdminLayout {
+export class AdminLayout implements OnInit, OnDestroy {
   sidebarOpen = true;
+  dropdownOpen = false;
 
-  constructor(private router: Router) {}
+  public signalr = inject(SignalRService);
+  private router = inject(Router);
+
+  constructor() {}
+
+  ngOnInit(): void {
+    this.signalr.iniciarConexao();
+    
+    // Fecha o dropdown ao clicar em qualquer lugar da tela
+    window.addEventListener('click', this.handleWindowClick);
+  }
+
+  ngOnDestroy(): void {
+    this.signalr.pararConexao();
+    window.removeEventListener('click', this.handleWindowClick);
+  }
+
+  private handleWindowClick = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.notification-container')) {
+      this.dropdownOpen = false;
+    }
+  };
+
+  toggleDropdown(event: Event): void {
+    event.stopPropagation();
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  fecharDropdown(): void {
+    this.dropdownOpen = false;
+  }
+
+  marcarComoLida(id: string, event: Event): void {
+    event.stopPropagation();
+    this.signalr.marcarComoLida(id);
+  }
+
+  excluirNotificacao(id: string, event: Event): void {
+    event.stopPropagation();
+    this.signalr.excluirNotificacao(id);
+  }
+
+  marcarTodasComoLidas(event: Event): void {
+    event.stopPropagation();
+    this.signalr.marcarTodasComoLidas();
+  }
+
+  limparTodas(event: Event): void {
+    event.stopPropagation();
+    this.signalr.limparTudo();
+  }
+
+  verEstoque(produtoId: number, idNotificacao?: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (idNotificacao) {
+      this.signalr.marcarComoLida(idNotificacao);
+    }
+    this.fecharDropdown();
+    this.router.navigate(['/admin/estoque']);
+  }
+
 
   get currentSection(): string {
     const url = this.router.url;
