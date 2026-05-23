@@ -138,7 +138,16 @@ export class PromocaoCadastro implements OnInit {
           produtoId: Number(r.produtoId),
           quantidadeMinima: Number(r.quantidadeMinima),
           quantidadePaga: r.quantidadePaga ? Number(r.quantidadePaga) : undefined,
-          valorDesconto: r.valorDesconto ? Number(r.valorDesconto) : undefined
+          valorDesconto: r.valorDesconto ? Number(r.valorDesconto) : undefined,
+          produto: { 
+            nome: "dummy", 
+            codigo: "dummy",
+            categoria: null 
+          },
+          promocao: { 
+            nome: formValue.nome, 
+            descricao: formValue.descricao || '' 
+          }
         }))
       };
 

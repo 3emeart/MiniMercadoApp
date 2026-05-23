@@ -14,6 +14,8 @@ export interface RegraPromocaoRequest {
   quantidadeMinima: number;
   valorDesconto?: number;
   quantidadePaga?: number;
+  produto?: any;
+  promocao?: any;
 }
 
 export interface RegraPromocaoResponse {

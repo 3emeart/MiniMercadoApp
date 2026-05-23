@@ -25,7 +25,7 @@ export class PromocaoLista implements OnInit {
     this.isLoading.set(true);
     this.cdr.detectChanges();
     
-    this.promocaoService.buscarTodos().subscribe({
+    this.promocaoService.buscarAtivas().subscribe({
       next: (data) => {
         this.promocoes.set(data);
         this.isLoading.set(false);
