@@ -1,0 +1,65 @@
+<div class="page-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h1 class="page-title" style="font-size: 1.5rem; margin-bottom: 0.25rem;">Promoções</h1>
+    <p class="page-subtitle" style="color: var(--color-text-secondary); font-size: 0.875rem;">Gerencie as campanhas promocionais e regras de desconto.</p>
+  </div>
+  
+  <a routerLink="/admin/promocoes/novo" class="btn btn-primary">
+    <span class="material-symbols-outlined">add</span> Nova Promoção
+  </a>
+</div>
+
+<div class="card table-container">
+  
+  <div *ngIf="isLoading()" style="padding: 3rem; text-align: center; color: var(--color-text-secondary);">
+    <span class="material-symbols-outlined spinning" style="font-size: 2rem;">progress_activity</span>
+    <p style="margin-top: 1rem;">Carregando promoções...</p>
+  </div>
+
+  <table class="table" *ngIf="!isLoading()">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Tipo</th>
+        <th>Início</th>
+        <th>Fim</th>
+        <th class="text-center">Status</th>
+        <th class="text-center" width="100">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr *ngIf="promocoes().length === 0">
+        <td colspan="6" class="text-center" style="padding: 3rem; color: var(--color-text-secondary);">
+          <span class="material-symbols-outlined" style="font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.5;">sell</span>
+          <p>Nenhuma promoção cadastrada.</p>
+        </td>
+      </tr>
+
+      <tr *ngFor="let p of promocoes()" [ngStyle]="{'opacity': p.ativo ? '1' : '0.6'}">
+        <td>
+          <div style="font-weight: 500;">{{ p.nome }}</div>
+          <div style="font-size: 0.75rem; color: var(--color-text-secondary);">{{ p.descricao }}</div>
+        </td>
+        <td>{{ getTipoNome(p.tipo) }}</td>
+        <td>{{ p.dataInicio | date:'shortDate' }}</td>
+        <td>{{ p.dataFim | date:'shortDate' }}</td>
+        <td class="text-center">
+          <span class="badge" [ngClass]="p.ativo ? 'badge-success' : 'badge-danger'">
+            {{ p.ativo ? 'Ativa' : 'Inativa' }}
+          </span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-icon-sm" title="Editar" [routerLink]="['/admin/promocoes/editar', p.id]">
+              <span class="material-symbols-outlined" style="font-size: 1.25rem;">edit</span>
+            </button>
+            <button class="btn-icon-sm" [title]="p.ativo ? 'Desativar' : 'Ativar'" (click)="toggleStatus(p.id)" [ngStyle]="{'color': p.ativo ? 'var(--color-danger)' : 'var(--color-success)'}">
+              <span class="material-symbols-outlined" style="font-size: 1.25rem;">{{ p.ativo ? 'block' : 'check_circle' }}</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

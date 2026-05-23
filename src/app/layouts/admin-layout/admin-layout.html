@@ -32,6 +32,12 @@
           </a>
         </li>
         <li class="nav-item" routerLinkActive="active">
+          <a routerLink="/admin/promocoes" class="nav-link">
+            <span class="material-symbols-outlined">sell</span>
+            <span class="nav-text" *ngIf="sidebarOpen">Promoções</span>
+          </a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
           <a routerLink="/admin/estoque" class="nav-link">
             <span class="material-symbols-outlined">warehouse</span>
             <span class="nav-text" *ngIf="sidebarOpen">Estoque</span>

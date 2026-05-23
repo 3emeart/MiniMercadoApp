@@ -1,0 +1,128 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ isEditMode ? 'Editar Promoção' : 'Cadastro de Promoção' }}</h1>
+    <p class="page-subtitle">{{ isEditMode ? 'Atualize as informações da promoção selecionada.' : 'Preencha as informações para adicionar uma nova promoção e suas regras.' }}</p>
+  </div>
+</div>
+
+<div class="card">
+  <form [formGroup]="promocaoForm" (ngSubmit)="onSubmit()">
+    
+    <div class="card-header">
+      <h2>Dados da Promoção</h2>
+    </div>
+    
+    <div class="card-body">
+      <div class="grid-form">
+        
+        <div class="form-group col-8">
+          <label for="nome" class="form-label">Nome da Promoção <span class="required">*</span></label>
+          <input type="text" id="nome" class="form-control" formControlName="nome" placeholder="Ex: Black Friday">
+          <div *ngIf="isSubmitted && promocaoForm.get('nome')?.hasError('required')" class="form-error-msg">
+            Campo obrigatório.
+          </div>
+        </div>
+
+        <div class="form-group col-4">
+          <label for="tipo" class="form-label">Tipo de Promoção <span class="required">*</span></label>
+          <select id="tipo" class="form-control" formControlName="tipo" (change)="onTipoChange()">
+            <option [value]="0">Leve X Pague Y</option>
+            <option [value]="1">Desconto p/ Quantidade</option>
+            <option [value]="2">Desconto Percentual</option>
+          </select>
+        </div>
+
+        <div class="form-group col-12">
+          <label for="descricao" class="form-label">Descrição</label>
+          <input type="text" id="descricao" class="form-control" formControlName="descricao" placeholder="Detalhes da campanha">
+        </div>
+
+        <div class="form-group col-6">
+          <label for="dataInicio" class="form-label">Data de Início <span class="required">*</span></label>
+          <input type="datetime-local" id="dataInicio" class="form-control" formControlName="dataInicio">
+          <div *ngIf="isSubmitted && promocaoForm.get('dataInicio')?.invalid" class="form-error-msg">
+            Data inválida.
+          </div>
+        </div>
+
+        <div class="form-group col-6">
+          <label for="dataFim" class="form-label">Data de Fim <span class="required">*</span></label>
+          <input type="datetime-local" id="dataFim" class="form-control" formControlName="dataFim">
+          <div *ngIf="isSubmitted && promocaoForm.get('dataFim')?.invalid" class="form-error-msg">
+            Data inválida.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card-header" style="border-top: 1px solid var(--color-border); border-bottom: none; display: flex; justify-content: space-between; align-items: center;">
+      <h2>Regras da Promoção</h2>
+      <button type="button" class="btn btn-outline" (click)="addRegra()">
+        <span class="material-symbols-outlined">add</span> Adicionar Regra
+      </button>
+    </div>
+
+    <div class="card-body" style="padding-top: 0;" formArrayName="regras">
+      <div *ngIf="regras.controls.length === 0" style="text-align: center; padding: 2rem; color: var(--color-text-secondary); background: rgba(0,0,0,0.02); border-radius: 8px;">
+        Nenhuma regra adicionada. Clique em "Adicionar Regra".
+      </div>
+
+      <div *ngFor="let regra of regras.controls; let i = index" [formGroupName]="i" class="grid-form" style="background: rgba(0,0,0,0.02); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; position: relative;">
+        
+        <button type="button" class="btn-icon-sm delete" style="position: absolute; right: 1rem; top: 1rem;" (click)="removeRegra(i)" title="Remover Regra">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <div class="form-group col-12">
+          <label class="form-label">Produto Alvo <span class="required">*</span></label>
+          <select class="form-control" formControlName="produtoId">
+            <option value="" disabled selected>Selecione um produto</option>
+            <option *ngFor="let p of produtos" [value]="p.id">{{ p.nome }} ({{ p.codigo }})</option>
+          </select>
+          <div *ngIf="isSubmitted && regra.get('produtoId')?.invalid" class="form-error-msg">
+            Selecione um produto.
+          </div>
+        </div>
+
+        <div class="form-group col-4">
+          <label class="form-label">Qtd. Mínima (Leva) <span class="required">*</span></label>
+          <input type="number" class="form-control" formControlName="quantidadeMinima" min="1">
+          <div *ngIf="isSubmitted && regra.get('quantidadeMinima')?.invalid" class="form-error-msg">
+            Inválido.
+          </div>
+        </div>
+
+        <!-- Aparece apenas no Leve X Pague Y (Tipo 0) -->
+        <div class="form-group col-4" *ngIf="promocaoForm.get('tipo')?.value == 0">
+          <label class="form-label">Qtd. Paga <span class="required">*</span></label>
+          <input type="number" class="form-control" formControlName="quantidadePaga" min="1">
+        </div>
+
+        <!-- Aparece no Desconto Quantidade (1) e Percentual (2) -->
+        <div class="form-group col-4" *ngIf="promocaoForm.get('tipo')?.value == 1">
+          <label class="form-label">Valor Desconto (R$)</label>
+          <input type="number" class="form-control" formControlName="valorDesconto" step="0.01">
+        </div>
+        
+        <div class="form-group col-4" *ngIf="promocaoForm.get('tipo')?.value == 2">
+          <label class="form-label">Porcentagem (%)</label>
+          <input type="number" class="form-control" formControlName="valorDesconto" step="1" max="100">
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancelar()">
+        <span class="material-symbols-outlined">close</span> Cancelar
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+        <span class="material-symbols-outlined" *ngIf="!isSaving">save</span>
+        <span class="material-symbols-outlined spinning" *ngIf="isSaving">progress_activity</span>
+        {{ isSaving ? 'Salvando...' : (isEditMode ? 'Atualizar Promoção' : 'Salvar Promoção') }}
+      </button>
+    </div>
+    
+  </form>
+</div>

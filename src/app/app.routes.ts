@@ -11,6 +11,8 @@ import { EstoqueGestao } from './pages/estoque/estoque-gestao/estoque-gestao';
 import { FinanceiroDetalhe } from './pages/financeiro/financeiro-detalhe/financeiro-detalhe';
 import { CategoriaLista } from './pages/produtos/categoria-lista/categoria-lista';
 import { DashboardComponent } from './pages/dashboard/dashboard';
+import { PromocaoLista } from './pages/promocoes/promocao-lista/promocao-lista';
+import { PromocaoCadastro } from './pages/promocoes/promocao-cadastro/promocao-cadastro';
 
 export const routes: Routes = [
   {
@@ -37,7 +39,10 @@ export const routes: Routes = [
       { path: 'estoque', component: EstoqueGestao },
       { path: 'financeiro', component: FinanceiroDetalhe },
       { path: 'usuarios', component: UsuarioLista },
-      { path: 'categorias', component: CategoriaLista }
+      { path: 'categorias', component: CategoriaLista },
+      { path: 'promocoes', component: PromocaoLista },
+      { path: 'promocoes/novo', component: PromocaoCadastro },
+      { path: 'promocoes/editar/:id', component: PromocaoCadastro }
     ]
   },
   {
