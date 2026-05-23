@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PromocaoService, PromocaoRequest, TipoPromocao, RegraPromocaoRequest } from '../../../services/promocao';
@@ -26,7 +26,7 @@ export class PromocaoCadastro implements OnInit {
     tipo: [0, [Validators.required]],
     dataInicio: ['', [Validators.required]],
     dataFim: ['', [Validators.required]],
-    regras: this.fb.array([])
+    regras: this.fb.array([], Validators.required)
   });
 
   isSubmitted = false;
@@ -59,6 +59,7 @@ export class PromocaoCadastro implements OnInit {
       quantidadePaga: [null],
       valorDesconto: [null]
     });
+    this.aplicarValidadoresRegra(regraForm, this.tipoSelecionado);
     this.regras.push(regraForm);
   }
 
@@ -66,8 +67,48 @@ export class PromocaoCadastro implements OnInit {
     this.regras.removeAt(index);
   }
 
-  onTipoChange() {
-    // Optionally reset fields based on type
+  onTipoChange(resetValues = true) {
+    const tipo = this.tipoSelecionado;
+
+    this.regras.controls.forEach((regra) => {
+      this.aplicarValidadoresRegra(regra, tipo, resetValues);
+    });
+  }
+
+  private get tipoSelecionado(): TipoPromocao {
+    return Number(this.promocaoForm.get('tipo')?.value) as TipoPromocao;
+  }
+
+  private aplicarValidadoresRegra(regra: AbstractControl, tipo: TipoPromocao, resetValues = false) {
+    const quantidadePaga = regra.get('quantidadePaga');
+    const valorDesconto = regra.get('valorDesconto');
+
+    quantidadePaga?.clearValidators();
+    valorDesconto?.clearValidators();
+
+    if (tipo === TipoPromocao.LeveXPagueY) {
+      quantidadePaga?.setValidators([Validators.required, Validators.min(1)]);
+      if (resetValues) {
+        valorDesconto?.setValue(null);
+      }
+    }
+
+    if (tipo === TipoPromocao.DescontoPorQuantidade) {
+      valorDesconto?.setValidators([Validators.required, Validators.min(0.01)]);
+      if (resetValues) {
+        quantidadePaga?.setValue(null);
+      }
+    }
+
+    if (tipo === TipoPromocao.DescontoPercentual) {
+      valorDesconto?.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
+      if (resetValues) {
+        quantidadePaga?.setValue(null);
+      }
+    }
+
+    quantidadePaga?.updateValueAndValidity();
+    valorDesconto?.updateValueAndValidity();
   }
 
   carregarProdutos() {
@@ -99,12 +140,14 @@ export class PromocaoCadastro implements OnInit {
         });
 
         p.regras.forEach(r => {
-          this.regras.push(this.fb.group({
+          const regraForm = this.fb.group({
             produtoId: [r.produtoId, Validators.required],
             quantidadeMinima: [r.quantidadeMinima, [Validators.required, Validators.min(1)]],
             quantidadePaga: [r.quantidadePaga],
             valorDesconto: [r.valorDesconto]
-          }));
+          });
+          this.aplicarValidadoresRegra(regraForm, this.tipoSelecionado);
+          this.regras.push(regraForm);
         });
 
         this.isSaving = false;
@@ -127,28 +170,15 @@ export class PromocaoCadastro implements OnInit {
       this.cdr.detectChanges();
       
       const formValue = this.promocaoForm.value;
+      const tipo = Number(formValue.tipo) as TipoPromocao;
       
       const payload: PromocaoRequest = {
         nome: formValue.nome,
         descricao: formValue.descricao,
-        tipo: Number(formValue.tipo),
+        tipo,
         dataInicio: new Date(formValue.dataInicio).toISOString(),
         dataFim: new Date(formValue.dataFim).toISOString(),
-        regras: formValue.regras.map((r: any) => ({
-          produtoId: Number(r.produtoId),
-          quantidadeMinima: Number(r.quantidadeMinima),
-          quantidadePaga: r.quantidadePaga ? Number(r.quantidadePaga) : undefined,
-          valorDesconto: r.valorDesconto ? Number(r.valorDesconto) : undefined,
-          produto: { 
-            nome: "dummy", 
-            codigo: "dummy",
-            categoria: null 
-          },
-          promocao: { 
-            nome: formValue.nome, 
-            descricao: formValue.descricao || '' 
-          }
-        }))
+        regras: formValue.regras.map((r: any) => this.criarRegraPayload(r, tipo))
       };
 
       const request = this.isEditMode && this.promocaoId 
@@ -170,8 +200,29 @@ export class PromocaoCadastro implements OnInit {
         }
       });
     } else {
+      this.promocaoForm.markAllAsTouched();
       this.cdr.detectChanges();
     }
+  }
+
+  private criarRegraPayload(regra: any, tipo: TipoPromocao): RegraPromocaoRequest {
+    const payload: RegraPromocaoRequest = {
+      produtoId: Number(regra.produtoId),
+      quantidadeMinima: Number(regra.quantidadeMinima)
+    };
+
+    if (tipo === TipoPromocao.LeveXPagueY) {
+      payload.quantidadePaga = Number(regra.quantidadePaga);
+    }
+
+    if (
+      tipo === TipoPromocao.DescontoPorQuantidade ||
+      tipo === TipoPromocao.DescontoPercentual
+    ) {
+      payload.valorDesconto = Number(regra.valorDesconto);
+    }
+
+    return payload;
   }
 
   cancelar() {
