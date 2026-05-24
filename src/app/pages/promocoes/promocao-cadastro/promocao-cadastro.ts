@@ -34,6 +34,7 @@ export class PromocaoCadastro implements OnInit {
   isEditMode = false;
   promocaoId: string | null = null;
   produtos: ProdutoResponse[] = [];
+  minDataInicio = this.formatarDataHoraLocal(new Date());
 
   ngOnInit() {
     this.carregarProdutos();
@@ -125,18 +126,12 @@ export class PromocaoCadastro implements OnInit {
     this.isSaving = true;
     this.promocaoService.buscarPorId(id).subscribe({
       next: (p) => {
-        // Format dates for datetime-local input
-        const formatData = (isoDate: string) => {
-          if (!isoDate) return '';
-          return new Date(isoDate).toISOString().slice(0, 16);
-        };
-
         this.promocaoForm.patchValue({
           nome: p.nome,
           descricao: p.descricao,
           tipo: p.tipo,
-          dataInicio: formatData(p.dataInicio),
-          dataFim: formatData(p.dataFim)
+          dataInicio: this.formatarDataHoraLocal(p.dataInicio),
+          dataFim: this.formatarDataHoraLocal(p.dataFim)
         });
 
         p.regras.forEach(r => {
@@ -164,6 +159,7 @@ export class PromocaoCadastro implements OnInit {
 
   onSubmit() {
     this.isSubmitted = true;
+    this.validarPeriodoPromocao();
     
     if (this.promocaoForm.valid) {
       this.isSaving = true;
@@ -199,6 +195,7 @@ export class PromocaoCadastro implements OnInit {
           const detalheErro = this.obterMensagemErro(err);
           alert(`Erro ao salvar promoção: ${detalheErro}`);
           console.error('Erro ao salvar promoção:', err.error || err);
+          console.error('Validações da API:', JSON.stringify(err.error?.errors || err.error || err, null, 2));
           this.cdr.detectChanges();
         }
       });
@@ -226,6 +223,49 @@ export class PromocaoCadastro implements OnInit {
     }
 
     return payload;
+  }
+
+  private validarPeriodoPromocao() {
+    const dataInicioControl = this.promocaoForm.get('dataInicio');
+    const dataFimControl = this.promocaoForm.get('dataFim');
+    const dataInicio = dataInicioControl?.value ? new Date(dataInicioControl.value) : null;
+    const dataFim = dataFimControl?.value ? new Date(dataFimControl.value) : null;
+
+    this.removerErroControle(dataInicioControl, 'dataPassada');
+    this.removerErroControle(dataFimControl, 'dataFimMenor');
+
+    if (!this.isEditMode && dataInicio && dataInicio < new Date()) {
+      dataInicioControl?.setErrors({ ...(dataInicioControl.errors || {}), dataPassada: true });
+    }
+
+    if (dataInicio && dataFim && dataFim <= dataInicio) {
+      dataFimControl?.setErrors({ ...(dataFimControl.errors || {}), dataFimMenor: true });
+    }
+  }
+
+  private removerErroControle(control: AbstractControl | null | undefined, erro: string) {
+    if (!control?.errors?.[erro]) {
+      return;
+    }
+
+    const errors = { ...control.errors };
+    delete errors[erro];
+    control.setErrors(Object.keys(errors).length ? errors : null);
+  }
+
+  private formatarDataHoraLocal(value: string | Date): string {
+    if (!value) {
+      return '';
+    }
+
+    const data = new Date(value);
+    const pad = (numero: number) => numero.toString().padStart(2, '0');
+
+    return [
+      data.getFullYear(),
+      pad(data.getMonth() + 1),
+      pad(data.getDate())
+    ].join('-') + `T${pad(data.getHours())}:${pad(data.getMinutes())}`;
   }
 
   private obterMensagemErro(err: any): string {
