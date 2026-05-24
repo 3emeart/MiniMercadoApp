@@ -239,18 +239,21 @@ export class PromocaoCadastro implements OnInit {
       return erro;
     }
 
+    if (erro.errors) {
+      return Object.entries(erro.errors)
+        .map(([campo, mensagens]) => {
+          const listaMensagens = Array.isArray(mensagens) ? mensagens : [mensagens];
+          return `${campo}: ${listaMensagens.join(', ')}`;
+        })
+        .join(' | ');
+    }
+
     if (erro.message) {
       return erro.message;
     }
 
     if (erro.title) {
       return erro.title;
-    }
-
-    if (erro.errors) {
-      return Object.entries(erro.errors)
-        .map(([campo, mensagens]) => `${campo}: ${(mensagens as string[]).join(', ')}`)
-        .join(' | ');
     }
 
     return JSON.stringify(erro);
