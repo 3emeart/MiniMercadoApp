@@ -181,6 +181,8 @@ export class PromocaoCadastro implements OnInit {
         regras: formValue.regras.map((r: any) => this.criarRegraPayload(r, tipo))
       };
 
+      console.log('Payload promoção:', payload);
+
       const request = this.isEditMode && this.promocaoId 
         ? this.promocaoService.update(this.promocaoId, payload)
         : this.promocaoService.create(payload);
@@ -194,8 +196,9 @@ export class PromocaoCadastro implements OnInit {
         },
         error: (err) => {
           this.isSaving = false;
-          alert('Erro ao salvar promoção.');
-          console.error(err);
+          const detalheErro = this.obterMensagemErro(err);
+          alert(`Erro ao salvar promoção: ${detalheErro}`);
+          console.error('Erro ao salvar promoção:', err.error || err);
           this.cdr.detectChanges();
         }
       });
@@ -223,6 +226,34 @@ export class PromocaoCadastro implements OnInit {
     }
 
     return payload;
+  }
+
+  private obterMensagemErro(err: any): string {
+    const erro = err?.error;
+
+    if (!erro) {
+      return 'verifique o console para mais detalhes.';
+    }
+
+    if (typeof erro === 'string') {
+      return erro;
+    }
+
+    if (erro.message) {
+      return erro.message;
+    }
+
+    if (erro.title) {
+      return erro.title;
+    }
+
+    if (erro.errors) {
+      return Object.entries(erro.errors)
+        .map(([campo, mensagens]) => `${campo}: ${(mensagens as string[]).join(', ')}`)
+        .join(' | ');
+    }
+
+    return JSON.stringify(erro);
   }
 
   cancelar() {
