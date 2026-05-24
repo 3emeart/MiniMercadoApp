@@ -35,10 +35,19 @@
         </td>
       </tr>
 
-      <tr *ngFor="let p of products()">
+      <tr *ngFor="let p of products()" [class.product-promo-row]="produtoTemPromocao(p.id)">
         <td>{{ p.codigo }}</td>
         <td>
-          <div style="font-weight: 500;">{{ p.nome }}</div>
+          <div class="product-name-line">
+            <span style="font-weight: 500;">{{ p.nome }}</span>
+            <span *ngIf="produtoTemPromocao(p.id)" class="promo-badge">
+              <span class="material-symbols-outlined">local_offer</span>
+              Promo
+            </span>
+          </div>
+          <div *ngIf="produtoTemPromocao(p.id)" class="promo-description">
+            {{ resumoPromocaoProduto(p.id) }}
+          </div>
         </td>
         <td class="text-right">
           {{ p.precoVenda | currency:'BRL':'symbol':'1.2-2' }}

@@ -1,0 +1,35 @@
+.product-promo-row {
+  background: #fffdf5;
+}
+
+.product-name-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.promo-badge {
+  align-items: center;
+  background: #fef3c7;
+  border-radius: 999px;
+  color: #92400e;
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 800;
+  gap: 0.2rem;
+  line-height: 1;
+  padding: 0.24rem 0.45rem;
+  text-transform: uppercase;
+}
+
+.promo-badge .material-symbols-outlined {
+  font-size: 0.9rem;
+}
+
+.promo-description {
+  color: #92400e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.2rem;
+}

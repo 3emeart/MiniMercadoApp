@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ProductService, ProdutoResponse } from '../../services/product';
+import { PromocaoResponse, PromocaoService, TipoPromocao } from '../../services/promocao';
 
 @Component({
   selector: 'app-product-list',
@@ -12,13 +13,16 @@ import { ProductService, ProdutoResponse } from '../../services/product';
 })
 export class ProductList implements OnInit {
   private productService = inject(ProductService);
+  private promocaoService = inject(PromocaoService);
   private cdr = inject(ChangeDetectorRef);
 
   products = signal<ProdutoResponse[]>([]);
   isLoading = signal<boolean>(true);
+  promocoesAtivas: PromocaoResponse[] = [];
 
   ngOnInit(): void {
     this.carregarProdutos();
+    this.carregarPromocoesAtivas();
   }
 
   carregarProdutos() {
@@ -37,6 +41,57 @@ export class ProductList implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  carregarPromocoesAtivas() {
+    this.promocaoService.buscarAtivas().subscribe({
+      next: (data) => {
+        this.promocoesAtivas = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar promoções ativas', err);
+      }
+    });
+  }
+
+  produtoTemPromocao(produtoId: number): boolean {
+    return this.promocoesAtivas.some((promocao) =>
+      promocao.ativo && promocao.regras?.some((regra) => regra.produtoId === produtoId)
+    );
+  }
+
+  resumoPromocaoProduto(produtoId: number): string {
+    const promocao = this.promocoesAtivas.find((item) =>
+      item.ativo && item.regras?.some((regra) => regra.produtoId === produtoId)
+    );
+
+    if (!promocao) {
+      return '';
+    }
+
+    const regra = promocao.regras.find((item) => item.produtoId === produtoId);
+
+    if (promocao.tipo === TipoPromocao.LeveXPagueY) {
+      return `Leve ${regra?.quantidadeMinima ?? ''} pague ${regra?.quantidadePaga ?? ''}`;
+    }
+
+    if (promocao.tipo === TipoPromocao.DescontoPorQuantidade) {
+      return `${this.formatarMoeda(regra?.valorDesconto ?? 0)} off a partir de ${regra?.quantidadeMinima ?? 1}`;
+    }
+
+    if (promocao.tipo === TipoPromocao.DescontoPercentual) {
+      return `${regra?.valorDesconto ?? 0}% off`;
+    }
+
+    return promocao.nome;
+  }
+
+  private formatarMoeda(valor: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(valor);
   }
 
   excluirProduto(id: number, nome: string) {
@@ -58,5 +113,4 @@ export class ProductList implements OnInit {
     }
   }
 }
-
 
