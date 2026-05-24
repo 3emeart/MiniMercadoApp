@@ -5,10 +5,14 @@ import { environment } from '../../environments/environment';
 
 export interface ItemVendaResponse {
   id: string;
+  produtoId: number;
   nomeProduto: string;
   quantidade: number;
   precoUnitario: number;
   subtotal: number;
+  subtotalOriginal: number;
+  descontoAplicado: number;
+  promocaoAplicada: boolean;
 }
 
 export interface VendaDetalheResponse {

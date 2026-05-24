@@ -252,9 +252,27 @@
   background: rgba(1, 186, 239, 0.06);
 }
 
+.product-row.has-promo {
+  background: #fffdf5;
+  border-left: 4px solid #d97706;
+  grid-template-columns: minmax(0, 1fr) 92px 130px;
+}
+
+.product-row.has-promo:hover:not(:disabled) {
+  background: #fff7e6;
+}
+
 .product-row:disabled {
   cursor: not-allowed;
   opacity: 0.62;
+}
+
+.product-title-line,
+.item-title-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .product-main strong {
@@ -263,6 +281,37 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.promo-pill,
+.item-promo-badge {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 800;
+  gap: 0.2rem;
+  line-height: 1;
+  padding: 0.24rem 0.45rem;
+  text-transform: uppercase;
+}
+
+.promo-pill {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.promo-pill .material-symbols-outlined,
+.item-promo-badge .material-symbols-outlined {
+  font-size: 0.9rem;
+}
+
+.promo-summary {
+  color: #92400e;
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  margin-top: 0.16rem;
 }
 
 .stock-pill {
@@ -398,6 +447,10 @@
   padding: 0.85rem 1rem;
 }
 
+.receipt-item.discounted {
+  background: #f0fdf4;
+}
+
 .item-index {
   align-items: center;
   background: var(--color-bg-main);
@@ -425,8 +478,28 @@
   font-size: 0.78rem;
 }
 
+.item-promo-badge {
+  background: rgba(46, 125, 50, 0.12);
+  color: var(--color-success);
+}
+
+.discount-note {
+  color: var(--color-success);
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  margin-top: 0.16rem;
+}
+
 .item-total {
   text-align: right;
+}
+
+.original-total {
+  color: var(--color-text-secondary);
+  display: block;
+  font-size: 0.74rem;
+  text-decoration: line-through;
 }
 
 .item-total strong {
@@ -439,6 +512,17 @@
   background: #f8fafc;
   border-top: 1px solid var(--color-border);
   padding: 1rem;
+}
+
+.discount-total-line {
+  align-items: center;
+  color: var(--color-success);
+  display: flex;
+  font-size: 0.85rem;
+  font-weight: 800;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
 }
 
 .total-line {

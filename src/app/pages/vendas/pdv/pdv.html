@@ -187,10 +187,20 @@
             (click)="adicionarProduto(p.id)"
             [disabled]="isProcessing || p.quantidadeAtual <= 0"
             [class.out-stock]="p.quantidadeAtual <= 0"
+            [class.has-promo]="produtoTemPromocao(p.id)"
           >
             <div class="product-main">
-              <strong>{{ p.nome }}</strong>
+              <div class="product-title-line">
+                <strong>{{ p.nome }}</strong>
+                <span *ngIf="produtoTemPromocao(p.id)" class="promo-pill">
+                  <span class="material-symbols-outlined">local_offer</span>
+                  Promo
+                </span>
+              </div>
               <span>Cód. {{ p.codigo }}</span>
+              <small *ngIf="produtoTemPromocao(p.id)" class="promo-summary">
+                {{ resumoPromocaoProduto(p.id) }}
+              </small>
             </div>
             <div class="stock-pill" [class.low]="p.quantidadeAtual > 0 && p.quantidadeAtual <= 5" [class.zero]="p.quantidadeAtual <= 0">
               {{ p.quantidadeAtual }} un
@@ -230,7 +240,7 @@
           </div>
           <div>
             <span>Status</span>
-            <strong>Em atendimento</strong>
+            <strong>{{ temPromocaoAplicada ? 'Promo aplicada' : 'Em atendimento' }}</strong>
           </div>
         </div>
 
@@ -240,13 +250,25 @@
             <p>Nenhum item lançado.</p>
           </li>
 
-          <li class="receipt-item" *ngFor="let item of vendaAtual.itens; let index = index">
+          <li class="receipt-item" *ngFor="let item of vendaAtual.itens; let index = index" [class.discounted]="item.promocaoAplicada">
             <div class="item-index">{{ index + 1 }}</div>
             <div class="item-info">
-              <strong>{{ item.nomeProduto }}</strong>
+              <div class="item-title-line">
+                <strong>{{ item.nomeProduto }}</strong>
+                <span *ngIf="item.promocaoAplicada" class="item-promo-badge">
+                  <span class="material-symbols-outlined">sell</span>
+                  Promoção aplicada
+                </span>
+              </div>
               <span>{{ item.quantidade }} x {{ item.precoUnitario | currency:'BRL':'symbol':'1.2-2' }}</span>
+              <small *ngIf="item.promocaoAplicada" class="discount-note">
+                Desconto: {{ item.descontoAplicado | currency:'BRL':'symbol':'1.2-2' }}
+              </small>
             </div>
             <div class="item-total">
+              <span *ngIf="item.promocaoAplicada" class="original-total">
+                {{ item.subtotalOriginal | currency:'BRL':'symbol':'1.2-2' }}
+              </span>
               <strong>{{ item.subtotal | currency:'BRL':'symbol':'1.2-2' }}</strong>
               <button class="btn-icon-sm delete" type="button" (click)="removerItem(item.id)" [disabled]="isProcessing" title="Cancelar item">
                 <span class="material-symbols-outlined">delete</span>
@@ -256,6 +278,10 @@
         </ul>
 
         <div class="receipt-footer">
+          <div *ngIf="temPromocaoAplicada" class="discount-total-line">
+            <span>Descontos</span>
+            <strong>-{{ totalDescontos | currency:'BRL':'symbol':'1.2-2' }}</strong>
+          </div>
           <div class="total-line">
             <span>Total</span>
             <strong>{{ vendaAtual.totalFinal | currency:'BRL':'symbol':'1.2-2' }}</strong>

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { VendaService, VendaDetalheResponse } from '../../../services/venda';
 import { ProductService, ProdutoResponse } from '../../../services/product';
 import { AuthService, UserDataResponse } from '../../../services/auth';
+import { PromocaoResponse, PromocaoService, TipoPromocao } from '../../../services/promocao';
 
 @Component({
   selector: 'app-pdv',
@@ -16,6 +17,7 @@ import { AuthService, UserDataResponse } from '../../../services/auth';
 export class PdvComponent implements OnInit {
   private vendaService = inject(VendaService);
   private productService = inject(ProductService);
+  private promocaoService = inject(PromocaoService);
   private cdr = inject(ChangeDetectorRef);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -30,6 +32,7 @@ export class PdvComponent implements OnInit {
   vendaAtual: VendaDetalheResponse | null = null;
   produtos: ProdutoResponse[] = [];
   produtosFiltrados: ProdutoResponse[] = [];
+  promocoesAtivas: PromocaoResponse[] = [];
   
   searchTerm = '';
   isProcessing = false;
@@ -51,6 +54,7 @@ export class PdvComponent implements OnInit {
     }
 
     this.carregarProdutos();
+    this.carregarPromocoesAtivas();
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -108,6 +112,14 @@ export class PdvComponent implements OnInit {
     return this.produtos.filter((produto) => produto.quantidadeAtual > 0).length;
   }
 
+  get totalDescontos(): number {
+    return this.vendaAtual?.itens?.reduce((total, item) => total + (item.descontoAplicado || 0), 0) ?? 0;
+  }
+
+  get temPromocaoAplicada(): boolean {
+    return this.totalDescontos > 0;
+  }
+
   sair() {
     this.authService.logout();
     this.router.navigate(['/pdv/login']);
@@ -126,6 +138,18 @@ export class PdvComponent implements OnInit {
         console.error('Erro ao buscar produtos', err);
         this.isLoadingProdutos = false;
         this.cdr.detectChanges();
+      }
+    });
+  }
+
+  carregarPromocoesAtivas() {
+    this.promocaoService.buscarAtivas().subscribe({
+      next: (data) => {
+        this.promocoesAtivas = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erro ao buscar promoções ativas', err);
       }
     });
   }
@@ -210,6 +234,7 @@ export class PdvComponent implements OnInit {
             this.exibindoAutorizacao = false;
             this.itemIdParaCancelar = null;
             this.carregarProdutos(); // Recarregar estoque
+            this.carregarPromocoesAtivas();
           },
           error: (err) => {
             console.error(err);
@@ -275,6 +300,7 @@ export class PdvComponent implements OnInit {
         this.isFinalizing = false;
         this.valorRecebido = null;
         this.carregarProdutos();
+        this.carregarPromocoesAtivas();
       },
       error: (err) => {
         console.error(err);
@@ -284,5 +310,43 @@ export class PdvComponent implements OnInit {
       }
     });
   }
-}
 
+  produtoTemPromocao(produtoId: number): boolean {
+    return this.promocoesAtivas.some((promocao) =>
+      promocao.ativo && promocao.regras?.some((regra) => regra.produtoId === produtoId)
+    );
+  }
+
+  resumoPromocaoProduto(produtoId: number): string {
+    const promocao = this.promocoesAtivas.find((item) =>
+      item.ativo && item.regras?.some((regra) => regra.produtoId === produtoId)
+    );
+
+    if (!promocao) {
+      return '';
+    }
+
+    const regra = promocao.regras.find((item) => item.produtoId === produtoId);
+
+    if (promocao.tipo === TipoPromocao.LeveXPagueY) {
+      return `Leve ${regra?.quantidadeMinima ?? ''} pague ${regra?.quantidadePaga ?? ''}`;
+    }
+
+    if (promocao.tipo === TipoPromocao.DescontoPorQuantidade) {
+      return `${this.formatarMoeda(regra?.valorDesconto ?? 0)} off a partir de ${regra?.quantidadeMinima ?? 1}`;
+    }
+
+    if (promocao.tipo === TipoPromocao.DescontoPercentual) {
+      return `${regra?.valorDesconto ?? 0}% off`;
+    }
+
+    return promocao.nome;
+  }
+
+  private formatarMoeda(valor: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(valor);
+  }
+}
