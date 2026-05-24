@@ -106,8 +106,14 @@
         <div class="form-group col-4" *ngIf="promocaoForm.get('tipo')?.value == 0">
           <label class="form-label">Qtd. Paga <span class="required">*</span></label>
           <input type="number" class="form-control" formControlName="quantidadePaga" min="1">
-          <div *ngIf="isSubmitted && regra.get('quantidadePaga')?.invalid" class="form-error-msg">
+          <div *ngIf="isSubmitted && regra.get('quantidadePaga')?.hasError('required')" class="form-error-msg">
             Informe a quantidade paga.
+          </div>
+          <div *ngIf="isSubmitted && regra.get('quantidadePaga')?.hasError('min')" class="form-error-msg">
+            A quantidade paga deve ser maior que zero.
+          </div>
+          <div *ngIf="isSubmitted && regra.get('quantidadePaga')?.hasError('quantidadePagaMaiorOuIgual')" class="form-error-msg">
+            A quantidade paga deve ser menor que a quantidade mínima.
           </div>
         </div>
 

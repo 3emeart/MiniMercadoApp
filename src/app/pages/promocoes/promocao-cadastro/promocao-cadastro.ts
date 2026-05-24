@@ -160,6 +160,7 @@ export class PromocaoCadastro implements OnInit {
   onSubmit() {
     this.isSubmitted = true;
     this.validarPeriodoPromocao();
+    this.validarRegrasPromocao();
     
     if (this.promocaoForm.valid) {
       this.isSaving = true;
@@ -241,6 +242,34 @@ export class PromocaoCadastro implements OnInit {
     if (dataInicio && dataFim && dataFim <= dataInicio) {
       dataFimControl?.setErrors({ ...(dataFimControl.errors || {}), dataFimMenor: true });
     }
+  }
+
+  private validarRegrasPromocao() {
+    if (this.tipoSelecionado !== TipoPromocao.LeveXPagueY) {
+      this.regras.controls.forEach((regra) => {
+        this.removerErroControle(regra.get('quantidadePaga'), 'quantidadePagaMaiorOuIgual');
+      });
+      return;
+    }
+
+    this.regras.controls.forEach((regra) => {
+      const quantidadeMinima = Number(regra.get('quantidadeMinima')?.value);
+      const quantidadePaga = Number(regra.get('quantidadePaga')?.value);
+      const quantidadePagaControl = regra.get('quantidadePaga');
+
+      this.removerErroControle(quantidadePagaControl, 'quantidadePagaMaiorOuIgual');
+
+      if (
+        Number.isFinite(quantidadeMinima) &&
+        Number.isFinite(quantidadePaga) &&
+        quantidadePaga >= quantidadeMinima
+      ) {
+        quantidadePagaControl?.setErrors({
+          ...(quantidadePagaControl.errors || {}),
+          quantidadePagaMaiorOuIgual: true
+        });
+      }
+    });
   }
 
   private removerErroControle(control: AbstractControl | null | undefined, erro: string) {
